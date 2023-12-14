@@ -1,33 +1,69 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
+
+
+enum ActionTypes {
+  Plus = 'plus',
+  Minus = 'minus',
+  UpdateRange = 'updateRange',
+}
 
 type tCounter = {
   count: number;
   range: number;
 };
 
+const initialState: tCounter = {
+  count: 0,
+  range: 1
+}
+
+function reducer(state: tCounter, action: { type: string, range ?: number }) {
+
+  switch ( action.type){
+    case ActionTypes.Plus: { 
+      return {
+        ...state,
+        count: state.count + state.range
+      }
+    }
+    case ActionTypes.Minus: { 
+      return {
+        ...state,
+        count: state.count - state.range
+      }
+    }
+    case ActionTypes.UpdateRange: { 
+      return {
+        ...state,
+        range: action.range
+      }
+    }
+  }
+  throw Error('Unknown action: ' + action.type);
+}
+
 export function App() {
-  const [countState, setCount] = useState<tCounter>({ count: 0, range: 1 });
+  const [state, dispatch] = useReducer(reducer, initialState);
+
   const updateRange = (value: number) => {
-    setCount((prev) => ({ ...prev, range: value }));
+    if (!isNaN(value)) {
+      dispatch({ type : 'updateRange', range : value})
+    }
   };
   const handleClick = (type: string) => {
-    setCount((prev) => ({
-      ...prev,
-      count:
-        type === 'plus' ? prev.count + prev.range : prev.count - prev.range,
-    }));
+      dispatch({ type: ActionTypes[type] })
   };
 
   return (
     <div>
       <input
         type="number"
-        value={countState.range}
-        onChange={(e) => updateRange(parseInt(e.target.value))}
+        value={state.range}
+        onChange={(e) => updateRange(parseInt(e.target.value, 10))}
       />
-      <button onClick={() => handleClick('minus')}>-</button>
-      <button onClick={() => handleClick('plus')}>+</button>
-      <p>clicked: {countState.count}</p>
+      <button onClick={() => handleClick('Minus')}>-</button>
+      <button onClick={() => handleClick('Plus')}>+</button>
+      <p>clicked: {state.count}</p>
     </div>
   );
 }
